@@ -79,9 +79,26 @@ function cCalculate() {
   const ml = y + '年' + m + '月'
   const prov = store.PROVINCES.find(p => store.provStatus[p]) || ''
 
+  const fields = pkg.fields || []
+
+  // 必填校验
+  for (const f of fields) {
+    const ftype = getFieldType(f)
+    if (ftype === 'pref_select') {
+      const sel = document.getElementById('cinp_' + f.code)
+      if (!sel || !sel.value) { store.toast('请填写 ' + f.name); return }
+      if (sel.value === 'custom') {
+        const customEl = document.getElementById('cinp_' + f.code + '_custom')
+        if (!customEl || !customEl.value.trim()) { store.toast('请填写 ' + f.name); return }
+      }
+    } else {
+      const el = document.getElementById('cinp_' + f.code)
+      if (!el || !el.value.trim()) { store.toast('请填写 ' + f.name); return }
+    }
+  }
+
   // Collect inputs
   const cInputs = {}
-  const fields = pkg.fields || []
 
   for (const f of fields) {
     const ftype = getFieldType(f)

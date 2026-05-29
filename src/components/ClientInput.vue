@@ -47,11 +47,11 @@
     <div class="c-card" v-if="pkg && pkg.fields && pkg.fields.length > 0">
       <div class="c-card-title">输入参数</div>
       <div v-for="f in pkg.fields" :key="f.code" class="form-group">
-        <label class="form-label">{{ f.name }}</label>
+        <label class="form-label"><span class="req">*</span>{{ f.name }}</label>
 
         <!-- pref_select -->
         <template v-if="getFieldType(f) === 'pref_select'">
-          <select :id="'cinp_' + f.code" @change="onPrefSourceChange(f.code)">
+          <select :id="'cinp_' + f.code" @change="onPrefSourceChange(f.code)" required>
             <option value="">-- 请选择P参考来源 --</option>
             <option v-for="ptName in getPrefOptions(f)" :key="ptName" :value="'price_' + ptName">{{ ptName }}</option>
             <option value="custom">自行输入</option>
@@ -62,7 +62,8 @@
             :placeholder="f.remark || '请输入'"
             style="display:none;margin-top:6px"
             @input="onNumInput($event, f.refValue || '')"
-            :data-ref-value="f.refValue || ''"
+            :data-ref-value="f.refValue || undefined"
+            required
           >
         </template>
 
@@ -73,8 +74,9 @@
             :id="'cinp_' + f.code"
             :placeholder="f.remark || '请输入'"
             @input="onNumInput($event, f.refValue || '')"
-            :data-ref-value="f.refValue || ''"
+            :data-ref-value="f.refValue || undefined"
             style="flex:1"
+            required
           >
           <span style="font-size:14px;color:var(--text-secondary)">%</span>
         </div>
@@ -86,7 +88,8 @@
           :id="'cinp_' + f.code"
           :placeholder="f.remark || '请输入'"
           @input="onNumInput($event, f.refValue || '')"
-          :data-ref-value="f.refValue || ''"
+          :data-ref-value="f.refValue || undefined"
+          required
         >
       </div>
     </div>
@@ -170,6 +173,7 @@ function onPrefSourceChange(code) {
 }
 
 function onNumInput(e, refVal) {
+  if (!refVal) return  // 无参考值时不限制输入格式（纯文本框）
   e.target.value = validateNumInput(e.target.value, refVal)
 }
 
