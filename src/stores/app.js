@@ -14,6 +14,7 @@ const DEFAULT_DATA = {
       {
         "id": 10,
         "name": "P中长期",
+        "code": "P_long_term",
         "method": "month",
         "prices": {
           "months": {
@@ -27,6 +28,7 @@ const DEFAULT_DATA = {
       {
         "id": 13,
         "name": "P实时",
+        "code": "P_realtime",
         "method": "month",
         "prices": {
           "months": {
@@ -39,6 +41,7 @@ const DEFAULT_DATA = {
       {
         "id": 14,
         "name": "P购电均",
+        "code": "P_purchase_avg",
         "method": "month",
         "prices": {
           "months": {
@@ -51,6 +54,7 @@ const DEFAULT_DATA = {
       {
         "id": 16,
         "name": "国网代理购电价格",
+        "code": "P_agent_purchase",
         "method": "month",
         "prices": {
           "months": {
@@ -63,6 +67,7 @@ const DEFAULT_DATA = {
       {
         "id": 17,
         "name": "年度交易均价",
+        "code": "P_annual_avg",
         "method": "year",
         "prices": {
           "year": 0.34419
@@ -73,6 +78,7 @@ const DEFAULT_DATA = {
       {
         "id": 4,
         "name": "批发市场中长期交易加权出清价格",
+        "code": "P_wholesale_avg",
         "method": "year",
         "prices": {
           "year": 0.395
@@ -398,7 +404,8 @@ export const useAppStore = defineStore('app', {
 
       // Price type editing
       editingPtId: null,
-      ptForm: { name: '', method: 'year' },
+      ptForm: { name: '', code: '', method: 'year' },
+      ptCodeReadonly: false,
 
       // Price detail
       priceDetailId: null,
@@ -511,19 +518,24 @@ export const useAppStore = defineStore('app', {
       if (id) {
         const pt = this.currentPriceTypes.find(p => p.id === id)
         if (pt) {
-          this.ptForm = { name: pt.name, method: pt.method }
+          this.ptForm = { name: pt.name, code: pt.code || '', method: pt.method }
+          this.ptCodeReadonly = true
           this.showPriceModal = true
           return
         }
       }
-      this.ptForm = { name: '', method: 'year' }
+      this.ptForm = { name: '', code: '', method: 'year' }
+      this.ptCodeReadonly = false
       this.showPriceModal = true
     },
 
     savePriceType() {
       const name = this.ptForm.name.trim()
+      const code = this.ptForm.code.trim()
       if (!name) { this.toast('请输入名称'); return }
       if (name.length > 30) { this.toast('名称不超过30字'); return }
+      if (!code) { this.toast('请输入字段编码'); return }
+      if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(code)) { this.toast('字段编码仅支持英文/数字/下划线，且不能以数字开头'); return }
       if (this.editingPtId) {
         const pt = this.currentPriceTypes.find(p => p.id === this.editingPtId)
         if (pt) {
@@ -537,6 +549,7 @@ export const useAppStore = defineStore('app', {
         this.priceTypes[this.currentProvince].push({
           id: this.nextPtId++,
           name,
+          code,
           method: this.ptForm.method,
           prices: this.ptForm.method === 'year' ? { year: null } : { months: {} }
         })

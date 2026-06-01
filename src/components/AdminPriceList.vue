@@ -8,7 +8,7 @@
       <div class="empty" v-if="store.currentPriceTypes.length === 0">暂无价格类型，点击右上角新增</div>
       <div v-else class="price-type-card" v-for="pt in store.currentPriceTypes" :key="pt.id">
         <div class="info">
-          <div class="name">{{ pt.name }}</div>
+          <div class="name">{{ pt.name }}<span v-if="pt.code" style="color:var(--text-hint);font-size:11px;margin-left:6px">{{ pt.code }}</span></div>
           <div class="meta">{{ pt.method === 'year' ? '按年' : '按年月' }} · {{ pricePreview(pt) }}</div>
         </div>
         <div class="btn-group">

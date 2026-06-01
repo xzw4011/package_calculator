@@ -59,7 +59,7 @@
                   <td>
                     <select :value="getFieldType(f)" @change="store.updateTF(i, 'type', $event.target.value)" style="width:110px">
                       <option value="text">文本输入</option>
-                      <option value="pref_select">P参考选择</option>
+                      <option value="pref_select">参考价</option>
                       <option value="pct_input">百分比输入</option>
                     </select>
                   </td>
@@ -68,10 +68,33 @@
                   <td><button class="btn btn-sm btn-danger" @click="store.removeTF(i)">删除</button></td>
                 </tr>
                 <tr v-if="getFieldType(f) === 'pref_select'" style="background:#fafafa">
-                  <td colspan="6" style="padding:6px 12px;font-size:12px">
-                    <span style="color:var(--text-secondary)">可选价格类型：</span>
-                    <input type="text" :value="f.prefOptions || ''" placeholder="多个用逗号分隔，留空=全部价格类型" style="width:60%;font-size:12px" @change="store.updateTF(i, 'prefOptions', $event.target.value)">
-                    <span style="color:var(--text-hint);margin-left:8px">例：国网代理购电,年度交易均价</span>
+                  <td colspan="6" style="padding:8px 12px;font-size:12px;overflow:visible">
+                    <span style="color:var(--text-secondary);margin-right:8px">可选价格类型：</span>
+                    <div class="ms-wrap">
+                      <div class="ms-trigger" :class="{ open: openMsIdx === i }" @click.stop="toggleMsDropdown(i)">
+                        <div class="ms-tags">
+                          <span v-for="tag in getMsSelectedTags(i)" :key="tag" class="ms-tag">
+                            {{ tag }}<span class="ms-tag-close" @click.stop="msRemoveTag(i, tag)">×</span>
+                          </span>
+                        </div>
+                        <span class="ms-placeholder" :style="{ display: getMsSelectedTags(i).length > 0 ? 'none' : '' }">请选择价格类型</span>
+                        <span class="ms-arrow">▾</span>
+                      </div>
+                      <div class="ms-dropdown" :class="{ show: openMsIdx === i }">
+                        <div class="ms-item ms-item-all">
+                          <label style="display:flex;align-items:center;gap:8px;padding:0;cursor:pointer;font-weight:500">
+                            <input type="checkbox" value="__all__" :checked="getMsSelectedTags(i).length === 0" @change="msToggleAll(i, $event.target)" style="flex-shrink:0;width:14px;height:14px;margin:0;cursor:pointer;accent-color:var(--primary)">全选
+                          </label>
+                        </div>
+                        <div v-if="store.currentPriceTypes.length === 0" class="ms-empty">暂无价格类型</div>
+                        <div v-for="pt in store.currentPriceTypes" :key="pt.id" class="ms-item">
+                          <label style="display:flex;align-items:center;gap:8px;padding:0;cursor:pointer">
+                            <input type="checkbox" :value="pt.name" :checked="isMsSelected(i, pt.name)" @change="msOnChange(i)" style="flex-shrink:0;width:14px;height:14px;margin:0;cursor:pointer;accent-color:var(--primary)">{{ pt.name }}
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    <span style="color:var(--text-hint);margin-left:8px;font-size:11px">留空=全部价格类型</span>
                   </td>
                 </tr>
               </template>
@@ -127,13 +150,60 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '../stores/app.js'
 import { getFieldType } from '../utils/formula.js'
 
 const store = useAppStore()
 const formulaDisplay = ref(null)
 const hasFormulaContent = ref(false)
+const openMsIdx = ref(-1)
+
+// Multi-select helpers
+function getMsSelectedTags(i) {
+  const f = store.tempFields[i]
+  if (!f) return []
+  return (f.prefOptions || '').split(',').map(s => s.trim()).filter(Boolean)
+}
+function isMsSelected(i, name) {
+  return getMsSelectedTags(i).includes(name)
+}
+function toggleMsDropdown(i) {
+  openMsIdx.value = openMsIdx.value === i ? -1 : i
+}
+function msOnChange(i) {
+  const f = store.tempFields[i]
+  if (!f) return
+  const allNames = store.currentPriceTypes.map(p => p.name)
+  const selected = allNames.filter(name => isCheckboxChecked(i, name))
+  f.prefOptions = selected.join(',')
+  if (selected.length === 0) {
+    // "全选" state - uncheck all triggers all-selected
+  }
+}
+function isCheckboxChecked(i, name) {
+  const f = store.tempFields[i]
+  if (!f) return false
+  return (f.prefOptions || '').split(',').map(s => s.trim()).filter(Boolean).includes(name)
+}
+function msToggleAll(i, target) {
+  const f = store.tempFields[i]
+  if (!f) return
+  if (target.checked) {
+    f.prefOptions = ''
+  } else {
+    target.checked = true
+  }
+}
+function msRemoveTag(i, name) {
+  const f = store.tempFields[i]
+  if (!f) return
+  const tags = (f.prefOptions || '').split(',').map(s => s.trim()).filter(Boolean)
+  f.prefOptions = tags.filter(t => t !== name).join(',')
+}
+function closeAllMs() {
+  openMsIdx.value = -1
+}
 
 const validFields = computed(() => store.tempFields.filter(f => f.name.trim() && f.code.trim()))
 const operations = ['+', '-', '×', '÷', '(', ')', 'min(', 'IF(', ',']
@@ -286,6 +356,16 @@ watch(() => store.showPackageModal, (visible) => {
     nextTick(() => {
       setFormulaValue(store.pkgForm.formula || '')
     })
+  } else {
+    closeAllMs()
   }
 })
+
+function onDocClick(e) {
+  if (!e.target.closest('.ms-wrap')) {
+    closeAllMs()
+  }
+}
+onMounted(() => document.addEventListener('click', onDocClick))
+onUnmounted(() => document.removeEventListener('click', onDocClick))
 </script>

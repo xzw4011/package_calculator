@@ -329,6 +329,26 @@ input:read-only{background:#f0f0f0;color:var(--text-hint);cursor:not-allowed;}
 .field-table input{width:100%;border:1px solid transparent;padding:4px 8px;border-radius:4px;font-size:13px;}
 .field-table input:focus{border-color:var(--primary);}
 
+/* Multi-select (Element-style tag input) */
+.ms-wrap{position:relative;display:inline-block;min-width:280px;max-width:100%;vertical-align:middle;}
+.ms-trigger{display:flex;align-items:center;min-height:34px;padding:2px 30px 2px 6px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;position:relative;gap:4px;flex-wrap:wrap;transition:border-color 0.2s;}
+.ms-trigger:hover{border-color:var(--primary);}
+.ms-trigger.open{border-color:var(--primary);box-shadow:0 0 0 2px rgba(22,119,255,0.1);}
+.ms-tags{display:flex;flex-wrap:wrap;gap:3px;flex:1;}
+.ms-tag{display:inline-flex;align-items:center;gap:2px;padding:1px 6px;background:var(--primary-light);color:var(--primary);border-radius:4px;font-size:12px;line-height:20px;}
+.ms-tag-close{cursor:pointer;font-size:14px;line-height:1;opacity:0.6;margin-left:2px;}
+.ms-tag-close:hover{opacity:1;}
+.ms-placeholder{color:var(--text-hint);font-size:13px;position:absolute;left:10px;pointer-events:none;}
+.ms-arrow{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--text-hint);transition:transform 0.2s;}
+.ms-trigger.open .ms-arrow{transform:translateY(-50%) rotate(180deg);}
+.ms-dropdown{position:absolute;top:100%;left:0;right:0;z-index:210;background:#fff;border:1px solid var(--border);border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,0.12);max-height:200px;overflow-y:auto;margin-top:4px;display:none;}
+.ms-dropdown.show{display:block;}
+.ms-item{padding:8px 12px;font-size:13px;cursor:pointer;transition:background 0.15s;}
+.ms-item:hover{background:#f5f5f5;}
+.ms-item label{width:100%;white-space:nowrap;}
+.ms-item-all{border-bottom:1px solid #f0f0f0;font-weight:500;}
+.ms-empty{padding:12px;text-align:center;color:var(--text-hint);font-size:12px;}
+
 /* Toggle */
 .toggle{position:relative;display:inline-block;width:44px;height:22px;cursor:pointer;}
 .toggle input{display:none;}

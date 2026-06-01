@@ -12,6 +12,11 @@
           <div class="form-hint">限制30字以内</div>
         </div>
         <div class="form-group">
+          <label class="form-label"><span class="req">*</span> 字段编码</label>
+          <input type="text" v-model="store.ptForm.code" maxlength="30" placeholder="如：P_long_term" :readonly="store.ptCodeReadonly">
+          <div class="form-hint">英文/数字/下划线，公式中引用此编码。{{ store.ptCodeReadonly ? '编辑时不可修改' : '' }}</div>
+        </div>
+        <div class="form-group">
           <label class="form-label"><span class="req">*</span> 配置方式</label>
           <select v-model="store.ptForm.method">
             <option value="year">按年（全年统一价格）</option>
