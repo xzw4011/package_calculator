@@ -429,4 +429,5 @@ input:read-only{background:#f0f0f0;color:var(--text-hint);cursor:not-allowed;}
 .rule-card .rule-msg{flex:1;min-width:180px;}
 .rule-card .field-checkboxes{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;}
 .rule-card .field-checkboxes label{cursor:pointer;white-space:nowrap;}
+.rule-card select,.rule-card input{cursor:pointer;}
 </style>

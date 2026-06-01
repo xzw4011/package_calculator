@@ -47,7 +47,7 @@
           <p class="form-hint" style="margin-bottom:8px">定义套餐公式中需要C端用户手动填入的变量字段</p>
           <button class="btn btn-sm" @click="store.addFieldRow()" style="margin-bottom:8px">+ 新增字段</button>
           <table class="field-table">
-            <thead><tr><th>字段名称</th><th>字段编码</th><th>字段类型</th><th>备注</th><th>参考值</th><th style="width:80px">操作</th></tr></thead>
+            <thead><tr><th>字段名称</th><th>字段编码</th><th>字段类型</th><th>备注</th><th>位数限制</th><th style="width:80px">操作</th></tr></thead>
             <tbody>
               <tr v-if="store.tempFields.length === 0">
                 <td colspan="6" style="text-align:center;color:var(--text-hint)">暂无字段</td>
@@ -112,7 +112,7 @@
               <span style="font-weight:500;min-width:50px">规则{{ i + 1 }}</span>
               <select :value="r.type" @change="r.type = $event.target.value" style="width:100px">
                 <option value="sum">多项之和</option>
-                <option value="max">单项上限</option>
+                <option value="max">单项</option>
               </select>
               <select :value="r.operator" @change="r.operator = $event.target.value" style="width:60px">
                 <option value=">=">>=</option>
@@ -128,9 +128,19 @@
               <span style="font-size:12px;color:var(--text-hint);min-width:50px">校验字段</span>
               <div class="field-checkboxes">
                 <span v-if="validFields.length === 0" style="color:var(--text-hint)">暂无可用字段</span>
-                <label v-for="f in validFields" :key="f.code" style="cursor:pointer;white-space:nowrap">
-                  <input type="checkbox" :checked="(r.fields || []).includes(f.code)" @change="store.toggleRuleField(i, f.code, $event.target.checked)">{{ f.name }}
-                </label>
+                <template v-if="r.type === 'max'">
+                  <label v-for="f in validFields" :key="f.code" style="cursor:pointer;white-space:nowrap">
+                    <input type="radio" :name="'rule_'+i+'_field'" :checked="(r.fields || []).includes(f.code)" @change="store.selectRuleField(i, f.code)">{{ f.name }}
+                  </label>
+                  <label style="cursor:pointer;white-space:nowrap;margin-left:8px">
+                    <input type="radio" :name="'rule_'+i+'_field'" :checked="(r.fields || []).length === 0" @change="store.selectRuleField(i, '')">不限制
+                  </label>
+                </template>
+                <template v-else>
+                  <label v-for="f in validFields" :key="f.code" style="cursor:pointer;white-space:nowrap">
+                    <input type="checkbox" :checked="(r.fields || []).includes(f.code)" @change="store.toggleRuleField(i, f.code, $event.target.checked)">{{ f.name }}
+                  </label>
+                </template>
               </div>
             </div>
             <div class="rule-row">
@@ -281,6 +291,14 @@ function onFormulaBlur() {
     if (el && el.contains(sel.anchorNode)) {
       savedRange = sel.getRangeAt(0).cloneRange()
     }
+  }
+  // 失焦时重新解析公式，修复手动编辑导致的tag/文字混排问题
+  const raw = getFormulaValue()
+  if (raw.trim()) {
+    setFormulaValue(raw)
+  } else {
+    const el2 = formulaDisplay.value
+    if (el2) { el2.innerHTML = ''; hasFormulaContent.value = false }
   }
 }
 

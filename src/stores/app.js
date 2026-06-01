@@ -715,6 +715,14 @@ export const useAppStore = defineStore('app', {
       }
     },
 
+    selectRuleField(ruleIdx, code) {
+      if (code) {
+        this.tempRules[ruleIdx].fields = [code]
+      } else {
+        this.tempRules[ruleIdx].fields = []
+      }
+    },
+
     // ---- C端 ----
     cInit() {
       const now = new Date()
